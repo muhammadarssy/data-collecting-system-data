@@ -11,6 +11,7 @@ import usersRoutes from './modules/users/users.routes';
 import projectsRoutes from './modules/projects/projects.routes';
 import devicesRoutes from './modules/devices/devices.routes';
 import dataRoutes from './modules/data/data.routes';
+import realtimeRoutes from './modules/realtime/realtime.routes';
 
 const app: Application = express();
 
@@ -42,6 +43,7 @@ app.use(`${apiPrefix}/users`, usersRoutes);
 app.use(`${apiPrefix}/projects`, projectsRoutes);
 app.use(`${apiPrefix}/devices`, devicesRoutes);
 app.use(`${apiPrefix}/data`, dataRoutes);
+app.use(`${apiPrefix}/realtime`, realtimeRoutes);
 
 // 404 handler
 app.use(notFoundHandler);

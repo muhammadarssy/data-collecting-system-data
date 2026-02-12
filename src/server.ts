@@ -5,6 +5,8 @@ import prisma from './config/database';
 import mqttHistoryCollector from './modules/mqtt/history.collector';
 import queueManager from './modules/queue/queue.manager';
 import { processHistoryData } from './modules/queue/history.worker';
+import mqttRealtimeService from './modules/mqtt/realtime.service';
+import { processRealtimeData } from './modules/queue/realtime.worker';
 
 async function startServer() {
   try {
@@ -15,8 +17,12 @@ async function startServer() {
     // Start MQTT History Collector
     await mqttHistoryCollector.connect();
 
+    // Start MQTT Realtime Service
+    await mqttRealtimeService.connect();
+
     // Start Queue Workers
     queueManager.historyQueue.process(config.queue.concurrency, processHistoryData);
+    queueManager.realtimeQueue.process(config.queue.concurrency, processRealtimeData);
     logger.info('Queue workers started');
 
     // Start Express server
@@ -32,8 +38,9 @@ async function startServer() {
       server.close(async () => {
         logger.info('HTTP server closed');
 
-        // Close MQTT connection
+        // Close MQTT connections
         await mqttHistoryCollector.disconnect();
+        await mqttRealtimeService.disconnect();
 
         // Close queue manager
         await queueManager.close();
