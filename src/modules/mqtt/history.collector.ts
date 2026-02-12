@@ -85,22 +85,37 @@ class MqttHistoryCollector {
    */
   private async handleMessage(topic: string, message: Buffer) {
     try {
+      logger.debug('Received MQTT message', {
+        topic,
+        messageSize: message.length,
+      });
+
       const parsedTopic = parseMqttTopic(topic);
 
       if (!parsedTopic) {
-        logger.warn(`Invalid topic format: ${topic}`);
+        logger.warn('Invalid MQTT topic format', {
+          topic,
+          expected: 'data/<site_id>/<type_data>/<device_id>/<devices>/<sn_gateway>',
+        });
         return;
       }
 
       // Only process history data
       if (parsedTopic.typeData !== 'history') {
+        logger.debug('Skipping non-history message', {
+          topic,
+          typeData: parsedTopic.typeData,
+        });
         return;
       }
 
       const payload = safeJsonParse(message.toString());
 
       if (!payload) {
-        logger.warn(`Invalid JSON payload for topic: ${topic}`);
+        logger.warn('Invalid JSON payload in MQTT message', {
+          topic,
+          messagePreview: message.toString().substring(0, 100),
+        });
         return;
       }
 
@@ -112,9 +127,17 @@ class MqttHistoryCollector {
         timestamp: new Date(),
       });
 
-      logger.debug(`History data queued from topic: ${topic}`);
+      logger.debug('MQTT message queued for processing', {
+        topic,
+        deviceId: parsedTopic.deviceId,
+        siteId: parsedTopic.siteId,
+        deviceType: parsedTopic.deviceType,
+      });
     } catch (error) {
-      logger.error(`Error handling message from ${topic}:`, error);
+      logger.error('Error handling MQTT message', {
+        topic,
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 

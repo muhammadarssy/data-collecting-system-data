@@ -2,7 +2,6 @@ import { Job } from 'bull';
 import prisma from '../../config/database';
 import logger from '../../config/logger';
 import { HistoryQueueData } from '../../shared/types';
-import { TOPIC_DEVICE_TYPE_MAP, INVERTER_SUBTYPES } from '../../shared/constants';
 
 /**
  * Process history data jobs
@@ -11,39 +10,76 @@ export async function processHistoryData(job: Job<HistoryQueueData>) {
   const { parsedTopic, payload } = job.data;
 
   try {
+    logger.debug('Processing MQTT history message', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      groupName: payload._groupName,
+      terminalTime: payload._terminalTime,
+    });
+
     const deviceType = parsedTopic.deviceType.toLowerCase();
-    
+    let saved = false;
+
     // Determine which table to save to based on device type
     if (deviceType === 'system' || deviceType === 'ehub') {
-      await saveGatewayHistory(parsedTopic.deviceId, payload);
+      saved = await saveGatewayHistory(parsedTopic, payload);
     } else if (deviceType === 'chint') {
-      await saveChintHistory(parsedTopic.deviceId, payload);
+      saved = await saveChintHistory(parsedTopic, payload);
     } else if (deviceType.includes('battery')) {
-      await saveInverterBatteryHistory(parsedTopic.deviceId, payload);
+      saved = await saveInverterBatteryHistory(parsedTopic, payload);
     } else if (deviceType.includes('inverter')) {
-      await saveInverterInverterHistory(parsedTopic.deviceId, payload);
+      saved = await saveInverterInverterHistory(parsedTopic, payload);
     } else if (deviceType.includes('load')) {
-      await saveInverterLoadHistory(parsedTopic.deviceId, payload);
+      saved = await saveInverterLoadHistory(parsedTopic, payload);
     } else if (deviceType.includes('mppt')) {
-      await saveInverterMpptHistory(parsedTopic.deviceId, payload);
+      saved = await saveInverterMpptHistory(parsedTopic, payload);
     } else if (deviceType.includes('pv')) {
-      await saveInverterPvHistory(parsedTopic.deviceId, payload);
+      saved = await saveInverterPvHistory(parsedTopic, payload);
+    } else {
+      logger.warn('Unknown device type received', {
+        deviceId: parsedTopic.deviceId,
+        deviceType: parsedTopic.deviceType,
+        siteId: parsedTopic.siteId,
+      });
     }
 
-    logger.debug(`Saved history data for device: ${parsedTopic.deviceId}`);
+    if (saved) {
+      logger.info('History data saved successfully', {
+        deviceId: parsedTopic.deviceId,
+        siteId: parsedTopic.siteId,
+        deviceType: parsedTopic.deviceType,
+        dataType: deviceType,
+        terminalTime: payload._terminalTime,
+      });
+    }
   } catch (error) {
-    logger.error('Error processing history data:', error);
+    logger.error('Error processing history data', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error; // Will trigger retry
   }
 }
 
-async function saveGatewayHistory(deviceIdFromTopic: string, payload: any) {
+async function saveGatewayHistory(parsedTopic: any, payload: any): Promise<boolean> {
   // Find device by deviceId
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'gateway',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   await prisma.gatewayHistoryData.create({
     data: {
@@ -63,14 +99,25 @@ async function saveGatewayHistory(deviceIdFromTopic: string, payload: any) {
       localFreeSpace: payload.LocalFreeSpace,
     },
   });
+
+  return true;
 }
 
-async function saveChintHistory(deviceIdFromTopic: string, payload: any) {
+async function saveChintHistory(parsedTopic: any, payload: any): Promise<boolean> {
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'chint',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   // Extract CHINT data (remove prefix if exists)
   const chintData: any = {};
@@ -117,14 +164,25 @@ async function saveChintHistory(deviceIdFromTopic: string, payload: any) {
       q4Eq: chintData.q4Eq ? parseFloat(chintData.q4Eq) : null,
     },
   });
+
+  return true;
 }
 
-async function saveInverterBatteryHistory(deviceIdFromTopic: string, payload: any) {
+async function saveInverterBatteryHistory(parsedTopic: any, payload: any): Promise<boolean> {
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'inverter_battery',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   // Extract INV data (remove prefix)
   const invData: any = {};
@@ -151,14 +209,25 @@ async function saveInverterBatteryHistory(deviceIdFromTopic: string, payload: an
       battDailyDischargeCap: invData.battDailyDischargeCap ? parseInt(invData.battDailyDischargeCap) : null,
     },
   });
+
+  return true;
 }
 
-async function saveInverterInverterHistory(deviceIdFromTopic: string, payload: any) {
+async function saveInverterInverterHistory(parsedTopic: any, payload: any): Promise<boolean> {
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'inverter_inverter',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   const invData: any = {};
   for (const [key, value] of Object.entries(payload)) {
@@ -200,14 +269,25 @@ async function saveInverterInverterHistory(deviceIdFromTopic: string, payload: a
       onGridPowerFactor: invData.onGridPowerFactor ? parseInt(invData.onGridPowerFactor) : null,
     },
   });
+
+  return true;
 }
 
-async function saveInverterLoadHistory(deviceIdFromTopic: string, payload: any) {
+async function saveInverterLoadHistory(parsedTopic: any, payload: any): Promise<boolean> {
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'inverter_load',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   const invData: any = {};
   for (const [key, value] of Object.entries(payload)) {
@@ -247,14 +327,25 @@ async function saveInverterLoadHistory(deviceIdFromTopic: string, payload: any) 
       totalLoadPowerConsump2: invData.totalLoadPowerConsump2 ? parseInt(invData.totalLoadPowerConsump2) : null,
     },
   });
+
+  return true;
 }
 
-async function saveInverterMpptHistory(deviceIdFromTopic: string, payload: any) {
+async function saveInverterMpptHistory(parsedTopic: any, payload: any): Promise<boolean> {
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'inverter_mppt',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   const invData: any = {};
   for (const [key, value] of Object.entries(payload)) {
@@ -289,14 +380,25 @@ async function saveInverterMpptHistory(deviceIdFromTopic: string, payload: any) 
       currOfMppt8: invData.currOfMppt8 ? parseInt(invData.currOfMppt8) : null,
     },
   });
+
+  return true;
 }
 
-async function saveInverterPvHistory(deviceIdFromTopic: string, payload: any) {
+async function saveInverterPvHistory(parsedTopic: any, payload: any): Promise<boolean> {
   const device = await prisma.device.findFirst({
-    where: { deviceId: deviceIdFromTopic },
+    where: { deviceId: parsedTopic.deviceId },
   });
 
-  if (!device) return;
+  if (!device) {
+    logger.warn('Device not found in database', {
+      deviceId: parsedTopic.deviceId,
+      siteId: parsedTopic.siteId,
+      deviceType: parsedTopic.deviceType,
+      dataType: 'inverter_pv',
+      action: 'data_skipped',
+    });
+    return false;
+  }
 
   const invData: any = {};
   for (const [key, value] of Object.entries(payload)) {
@@ -321,4 +423,6 @@ async function saveInverterPvHistory(deviceIdFromTopic: string, payload: any) {
   await prisma.inverterPvHistory.create({
     data: pvData,
   });
+
+  return true;
 }

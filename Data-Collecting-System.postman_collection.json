@@ -1,0 +1,1401 @@
+{
+	"info": {
+		"_postman_id": "data-collecting-system-api",
+		"name": "Data Collecting System API",
+		"description": "Complete API collection for Data Collecting System - MQTT & REST API\n\nBase URL: http://localhost:3000/api/v1\n\n**Setup:**\n1. Login or Register to get access token\n2. Set token in Authorization tab or use {{accessToken}} variable\n3. Create project with siteId\n4. Add devices to project\n5. Query historical data",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register New User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.environment.set('accessToken', response.data.accessToken);",
+									"        pm.environment.set('refreshToken', response.data.refreshToken);",
+									"        pm.environment.set('userId', response.data.user.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"testuser@example.com\",\n    \"password\": \"TestPass123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.environment.set('accessToken', response.data.accessToken);",
+									"        pm.environment.set('refreshToken', response.data.refreshToken);",
+									"        pm.environment.set('userId', response.data.user.id);",
+									"        pm.environment.set('username', response.data.user.username);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"Admin123!@#\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with username and password. Returns access token and refresh token."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current authenticated user profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.accessToken) {",
+									"        pm.environment.set('accessToken', response.data.accessToken);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh access token using refresh token"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and token management"
+		},
+		{
+			"name": "2. Users",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						},
+						"description": "Get current user profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"newemail@example.com\",\n    \"password\": \"NewPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						},
+						"description": "Update current user profile (email and/or password)"
+					},
+					"response": []
+				},
+				{
+					"name": "List Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users?search=&page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by username or email"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "List all users (for invitation purposes)"
+					},
+					"response": []
+				},
+				{
+					"name": "Invite User to Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"projectId\": \"{{projectId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/invite",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"invite"
+							]
+						},
+						"description": "Invite user to project by username"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove User from Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{projectId}}/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{projectId}}",
+								"{{userId}}"
+							]
+						},
+						"description": "Remove user from project"
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints"
+		},
+		{
+			"name": "3. Projects",
+			"item": [
+				{
+					"name": "Create Project",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('projectId', response.data.id);",
+									"        pm.environment.set('siteId', response.data.siteId);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Solar Plant A\",\n    \"siteId\": \"site001\",\n    \"description\": \"Main solar plant facility\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/projects",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"projects"
+							]
+						},
+						"description": "Create a new project with unique siteId"
+					},
+					"response": []
+				},
+				{
+					"name": "List Projects",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects?page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"projects"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "List all projects accessible by current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"projects",
+								"{{projectId}}"
+							]
+						},
+						"description": "Get project details by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Solar Plant A - Updated\",\n    \"description\": \"Updated facility description\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"projects",
+								"{{projectId}}"
+							]
+						},
+						"description": "Update project details"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"projects",
+								"{{projectId}}"
+							]
+						},
+						"description": "Delete project (owner only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Project Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/projects/{{projectId}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"projects",
+								"{{projectId}}",
+								"users"
+							]
+						},
+						"description": "Get all users assigned to this project"
+					},
+					"response": []
+				}
+			],
+			"description": "Project management endpoints"
+		},
+		{
+			"name": "4. Devices",
+			"item": [
+				{
+					"name": "Create Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('deviceId', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deviceId\": \"device001\",\n    \"deviceType\": \"CHINT\",\n    \"name\": \"Power Meter 1\",\n    \"description\": \"Main power meter\",\n    \"projectId\": \"{{projectId}}\",\n    \"snGateway\": \"7011957300020111017\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices"
+							]
+						},
+						"description": "Create a new device. Device types: EHUB, CHINT, INVERTER"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device - Gateway (EHUB)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deviceId\": \"gateway001\",\n    \"deviceType\": \"EHUB\",\n    \"name\": \"Gateway 1\",\n    \"description\": \"Main gateway device\",\n    \"projectId\": \"{{projectId}}\",\n    \"snGateway\": \"7011957300020111017\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices"
+							]
+						},
+						"description": "Create a gateway (EHUB) device"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device - Inverter",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"deviceId\": \"inverter001\",\n    \"deviceType\": \"INVERTER\",\n    \"name\": \"Solar Inverter 1\",\n    \"description\": \"Main solar inverter\",\n    \"projectId\": \"{{projectId}}\",\n    \"snGateway\": \"7011957300020111017\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices"
+							]
+						},
+						"description": "Create an inverter device"
+					},
+					"response": []
+				},
+				{
+					"name": "List Devices by Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/devices?projectId={{projectId}}&page=1&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						},
+						"description": "List all devices in a project"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Device Details",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/devices/{{deviceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"{{deviceId}}"
+							]
+						},
+						"description": "Get device details by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Device",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Power Meter 1 - Updated\",\n    \"description\": \"Updated power meter description\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/devices/{{deviceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"{{deviceId}}"
+							]
+						},
+						"description": "Update device details"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Device",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/devices/{{deviceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"devices",
+								"{{deviceId}}"
+							]
+						},
+						"description": "Delete device"
+					},
+					"response": []
+				}
+			],
+			"description": "Device management endpoints"
+		},
+		{
+			"name": "5. Historical Data",
+			"item": [
+				{
+					"name": "Query Gateway History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/gateway?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"gateway"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query gateway (EHUB) historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Query Chint History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/chint?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"chint"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query Chint power meter historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Query Inverter Battery History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/inverter/battery?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"inverter",
+								"battery"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query inverter battery historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Query Inverter Inverter History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/inverter/inverter?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"inverter",
+								"inverter"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query inverter (main) historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Query Inverter Load History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/inverter/load?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"inverter",
+								"load"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query inverter load historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Query Inverter MPPT History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/inverter/mppt?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"inverter",
+								"mppt"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query inverter MPPT historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Query Inverter PV History",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/inverter/pv?projectId={{projectId}}&page=1&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"inverter",
+								"pv"
+							],
+							"query": [
+								{
+									"key": "projectId",
+									"value": "{{projectId}}"
+								},
+								{
+									"key": "deviceId",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "startDate",
+									"value": "2026-02-01T00:00:00Z",
+									"disabled": true
+								},
+								{
+									"key": "endDate",
+									"value": "2026-02-28T23:59:59Z",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								}
+							]
+						},
+						"description": "Query inverter PV (photovoltaic) historical data"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Latest Device Data",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/data/device/{{deviceId}}/latest",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"data",
+								"device",
+								"{{deviceId}}",
+								"latest"
+							]
+						},
+						"description": "Get latest data from a specific device (all types combined for inverter)"
+					},
+					"response": []
+				}
+			],
+			"description": "Historical data query endpoints"
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"health"
+					]
+				},
+				"description": "Health check endpoint (no authentication required)"
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "projectId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "deviceId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "siteId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "username",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
