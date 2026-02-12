@@ -1,0 +1,561 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+enum DeviceType {
+  EHUB      // Gateway
+  CHINT     // Power Meter
+  INVERTER  // Solar Inverter
+}
+
+enum NotificationRuleType {
+  THRESHOLD         // value > x or value < x
+  CHANGE_DETECTION  // value changed
+  DEVICE_STATUS     // online/offline
+  CUSTOM_EXPRESSION // custom logic
+}
+
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+// ============================================
+// USER & AUTHENTICATION
+// ============================================
+
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  role      UserRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  ownedProjects  Project[]       @relation("ProjectOwner")
+  projectUsers   ProjectUser[]
+  notifications  Notification[]
+  createdRules   NotificationRule[]
+
+  @@map("users")
+}
+
+// ============================================
+// PROJECT & SITE MANAGEMENT
+// ============================================
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  siteId      String   @unique // site_id from MQTT topic
+  description String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  owner         User              @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  projectUsers  ProjectUser[]
+  devices       Device[]
+  rules         NotificationRule[]
+
+  @@index([siteId])
+  @@index([ownerId])
+  @@map("projects")
+}
+
+model ProjectUser {
+  id         String   @id @default(cuid())
+  projectId  String
+  userId     String
+  assignedAt DateTime @default(now())
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_users")
+}
+
+// ============================================
+// DEVICE MANAGEMENT
+// ============================================
+
+model Device {
+  id           String     @id @default(cuid())
+  deviceId     String     // device_id from MQTT topic
+  deviceType   DeviceType
+  name         String
+  description  String?
+  projectId    String
+  snGateway    String?    // Serial number gateway
+  isOnline     Boolean    @default(false)
+  lastSeenAt   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  project              Project                    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  gatewayHistory       GatewayHistoryData[]
+  chintHistory         ChintHistoryData[]
+  inverterBattery      InverterBatteryHistory[]
+  inverterInverter     InverterInverterHistory[]
+  inverterLoad         InverterLoadHistory[]
+  inverterMppt         InverterMpptHistory[]
+  inverterPv           InverterPvHistory[]
+  notificationRules    NotificationRule[]
+
+  @@unique([deviceId, projectId])
+  @@index([deviceId])
+  @@index([projectId])
+  @@index([deviceType])
+  @@map("devices")
+}
+
+// ============================================
+// GATEWAY (EHUB) HISTORY DATA
+// ============================================
+
+model GatewayHistoryData {
+  id               String   @id @default(cuid())
+  deviceId         String
+  terminalTime     DateTime
+  groupName        String
+  
+  // System Info
+  runTime          String?
+  runSecond        String?
+  startDateTime    String?
+  buzzerSw         String?
+  restartDevice    String?
+  cloudOnline      String?
+  
+  // Storage
+  sdFreeSpace      String?
+  uFreeSpace       String?
+  sysFreeSpace     String?
+  localTotalSpace  String?
+  localFreeSpace   String?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("gateway_history_data")
+}
+
+// ============================================
+// CHINT (POWER METER) HISTORY DATA
+// ============================================
+
+model ChintHistoryData {
+  id            String   @id @default(cuid())
+  deviceId      String
+  terminalTime  DateTime
+  groupName     String
+  
+  // Electrical Measurements
+  irAt          String?
+  urAt          String?
+  uab           Float?
+  ubc           Float?
+  uca           Float?
+  ua            Float?
+  ub            Float?
+  uc            Float?
+  ia            Float?
+  ib            Float?
+  ic            Float?
+  pt            Float?
+  pa            Float?
+  pb            Float?
+  pc            Float?
+  qt            Float?
+  qa            Float?
+  qb            Float?
+  qc            Float?
+  pft           Float?
+  pfa           Float?
+  pfb           Float?
+  pfc           Float?
+  freq          Float?
+  dmPt          Float?
+  impEp         Float?
+  expEp         Float?
+  q1Eq          Float?
+  q2Eq          Float?
+  q3Eq          Float?
+  q4Eq          Float?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("chint_history_data")
+}
+
+// ============================================
+// INVERTER HISTORY DATA - BATTERY
+// ============================================
+
+model InverterBatteryHistory {
+  id                      String   @id @default(cuid())
+  deviceId                String
+  terminalTime            DateTime
+  groupName               String
+  
+  battStatus              Int?
+  battVolt                Int?
+  battCurr                Int?
+  battPower               Int?
+  battMaxTemp             Int?
+  battMinTemp             Int?
+  cellsMaxVolt            Int?
+  cellsMinVolt            Int?
+  battCapacity            Int?
+  battDailyChargeCap      Int?
+  battDailyDischargeCap   Int?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("inverter_battery_history")
+}
+
+// ============================================
+// INVERTER HISTORY DATA - INVERTER
+// ============================================
+
+model InverterInverterHistory {
+  id                              String   @id @default(cuid())
+  deviceId                        String
+  terminalTime                    DateTime
+  groupName                       String
+  
+  devStatus                       Int?
+  dailyEnergy                     Int?
+  totalEnergy1                    Int?
+  totalEnergy2                    Int?
+  gridFreq                        Int?
+  uPhaseUvGridVolt                Int?
+  vPhaseVwGridVolt                Int?
+  wPhaseWuGridVolt                Int?
+  uPhaseGridCurr                  Int?
+  vPhaseGridCurr                  Int?
+  wPhaseGridCurr                  Int?
+  gridConnTotalActivePower        Int?
+  gridConnTotalReactivePower      Int?
+  heatsinkTemp                    Int?
+  innerTemp                       Int?
+  gridConnTotalApparentPower      Int?
+  igbtTemp                        Int?
+  outputPowerFactor               Int?
+  pvInputTotalPower               Int?
+  acLeakageCurr                   Int?
+  dailyPowerConsump               Int?
+  totalPowerConsump1              Int?
+  totalPowerConsump2              Int?
+  onGridActivePower               Int?
+  onGridApparentPower             Int?
+  onGridReactivePower             Int?
+  onGridPowerFactor               Int?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("inverter_inverter_history")
+}
+
+// ============================================
+// INVERTER HISTORY DATA - LOAD
+// ============================================
+
+model InverterLoadHistory {
+  id                          String   @id @default(cuid())
+  deviceId                    String
+  terminalTime                DateTime
+  groupName                   String
+  
+  uPhaseLoadVolt              Int?
+  vPhaseLoadVolt              Int?
+  wPhaseLoadVolt              Int?
+  uPhaseLoadCurr              Int?
+  vPhaseLoadCurr              Int?
+  wPhaseLoadCurr              Int?
+  loadTotalActivePower        Int?
+  loadTotalReactivePower      Int?
+  loadTotalApparentPower      Int?
+  uPhaseLoadActivePower       Int?
+  vPhaseLoadActivePower       Int?
+  wPhaseLoadActivePower       Int?
+  uPhaseLoadReactivePower     Int?
+  vPhaseLoadReactivePower     Int?
+  wPhaseLoadReactivePower     Int?
+  uPhaseLoadApparentPower     Int?
+  vPhaseLoadApparentPower     Int?
+  wPhaseLoadApparentPower     Int?
+  uPhaseLoadPowerFactor       Int?
+  vPhaseLoadPowerFactor       Int?
+  wPhaseLoadPowerFactor       Int?
+  loadPowerFactor             Int?
+  dailyLoadPowerConsump       Int?
+  totalLoadPowerConsump1      Int?
+  totalLoadPowerConsump2      Int?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("inverter_load_history")
+}
+
+// ============================================
+// INVERTER HISTORY DATA - MPPT
+// ============================================
+
+model InverterMpptHistory {
+  id                    String   @id @default(cuid())
+  deviceId              String
+  terminalTime          DateTime
+  groupName             String
+  
+  dailyPvEnergy         Int?
+  totalPvEnergy1        Int?
+  totalPvEnergy2        Int?
+  totalInsulationImp    Int?
+  voltOfMppt1           Int?
+  voltOfMppt2           Int?
+  voltOfMppt3           Int?
+  voltOfMppt4           Int?
+  voltOfMppt5           Int?
+  voltOfMppt6           Int?
+  voltOfMppt7           Int?
+  voltOfMppt8           Int?
+  currOfMppt1           Int?
+  currOfMppt2           Int?
+  currOfMppt3           Int?
+  currOfMppt4           Int?
+  currOfMppt5           Int?
+  currOfMppt6           Int?
+  currOfMppt7           Int?
+  currOfMppt8           Int?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("inverter_mppt_history")
+}
+
+// ============================================
+// INVERTER HISTORY DATA - PV
+// ============================================
+
+model InverterPvHistory {
+  id              String   @id @default(cuid())
+  deviceId        String
+  terminalTime    DateTime
+  groupName       String
+  
+  // Voltage (32 PV strings)
+  voltageOfPv1    Int?
+  voltageOfPv2    Int?
+  voltageOfPv3    Int?
+  voltageOfPv4    Int?
+  voltageOfPv5    Int?
+  voltageOfPv6    Int?
+  voltageOfPv7    Int?
+  voltageOfPv8    Int?
+  voltageOfPv9    Int?
+  voltageOfPv10   Int?
+  voltageOfPv11   Int?
+  voltageOfPv12   Int?
+  voltageOfPv13   Int?
+  voltageOfPv14   Int?
+  voltageOfPv15   Int?
+  voltageOfPv16   Int?
+  voltageOfPv17   Int?
+  voltageOfPv18   Int?
+  voltageOfPv19   Int?
+  voltageOfPv20   Int?
+  voltageOfPv21   Int?
+  voltageOfPv22   Int?
+  voltageOfPv23   Int?
+  voltageOfPv24   Int?
+  voltageOfPv25   Int?
+  voltageOfPv26   Int?
+  voltageOfPv27   Int?
+  voltageOfPv28   Int?
+  voltageOfPv29   Int?
+  voltageOfPv30   Int?
+  voltageOfPv31   Int?
+  voltageOfPv32   Int?
+  
+  // Current (32 PV strings)
+  currentOfPv1    Int?
+  currentOfPv2    Int?
+  currentOfPv3    Int?
+  currentOfPv4    Int?
+  currentOfPv5    Int?
+  currentOfPv6    Int?
+  currentOfPv7    Int?
+  currentOfPv8    Int?
+  currentOfPv9    Int?
+  currentOfPv10   Int?
+  currentOfPv11   Int?
+  currentOfPv12   Int?
+  currentOfPv13   Int?
+  currentOfPv14   Int?
+  currentOfPv15   Int?
+  currentOfPv16   Int?
+  currentOfPv17   Int?
+  currentOfPv18   Int?
+  currentOfPv19   Int?
+  currentOfPv20   Int?
+  currentOfPv21   Int?
+  currentOfPv22   Int?
+  currentOfPv23   Int?
+  currentOfPv24   Int?
+  currentOfPv25   Int?
+  currentOfPv26   Int?
+  currentOfPv27   Int?
+  currentOfPv28   Int?
+  currentOfPv29   Int?
+  currentOfPv30   Int?
+  currentOfPv31   Int?
+  currentOfPv32   Int?
+  
+  // Power (32 PV strings)
+  powerOfPv1      Int?
+  powerOfPv2      Int?
+  powerOfPv3      Int?
+  powerOfPv4      Int?
+  powerOfPv5      Int?
+  powerOfPv6      Int?
+  powerOfPv7      Int?
+  powerOfPv8      Int?
+  powerOfPv9      Int?
+  powerOfPv10     Int?
+  powerOfPv11     Int?
+  powerOfPv12     Int?
+  powerOfPv13     Int?
+  powerOfPv14     Int?
+  powerOfPv15     Int?
+  powerOfPv16     Int?
+  powerOfPv17     Int?
+  powerOfPv18     Int?
+  powerOfPv19     Int?
+  powerOfPv20     Int?
+  powerOfPv21     Int?
+  powerOfPv22     Int?
+  powerOfPv23     Int?
+  powerOfPv24     Int?
+  powerOfPv25     Int?
+  powerOfPv26     Int?
+  powerOfPv27     Int?
+  powerOfPv28     Int?
+  powerOfPv29     Int?
+  powerOfPv30     Int?
+  powerOfPv31     Int?
+  powerOfPv32     Int?
+
+  createdAt DateTime @default(now())
+
+  // Relations
+  device Device @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([deviceId])
+  @@index([terminalTime])
+  @@map("inverter_pv_history")
+}
+
+// ============================================
+// NOTIFICATION RULES & NOTIFICATIONS
+// ============================================
+
+model NotificationRule {
+  id          String                @id @default(cuid())
+  name        String
+  description String?
+  deviceId    String
+  projectId   String
+  ruleType    NotificationRuleType
+  field       String                // Field name to monitor (e.g., "battVolt", "pt", "devStatus")
+  operator    String?               // For THRESHOLD: ">", "<", ">=", "<=", "==", "!="
+  value       Float?                // Threshold value
+  expression  String?               // For CUSTOM_EXPRESSION: custom logic
+  isActive    Boolean               @default(true)
+  createdById String
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  // Relations
+  device       Device         @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdBy    User           @relation(fields: [createdById], references: [id])
+  notifications Notification[]
+
+  @@index([deviceId])
+  @@index([projectId])
+  @@index([isActive])
+  @@map("notification_rules")
+}
+
+model Notification {
+  id        String             @id @default(cuid())
+  userId    String
+  ruleId    String
+  title     String
+  message   String
+  data      Json?              // Additional data context
+  status    NotificationStatus @default(UNREAD)
+  createdAt DateTime           @default(now())
+  readAt    DateTime?
+
+  // Relations
+  user User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rule NotificationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("notifications")
+}
