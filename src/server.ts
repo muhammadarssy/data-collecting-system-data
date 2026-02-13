@@ -7,6 +7,7 @@ import queueManager from './modules/queue/queue.manager';
 import { processHistoryData } from './modules/queue/history.worker';
 import mqttRealtimeService from './modules/mqtt/realtime.service';
 import { processRealtimeData } from './modules/queue/realtime.worker';
+import sseManager from './modules/notifications/sse.manager';
 
 async function startServer() {
   try {
@@ -37,6 +38,10 @@ async function startServer() {
 
       server.close(async () => {
         logger.info('HTTP server closed');
+
+        // Close SSE connections
+        sseManager.closeAllConnections();
+        logger.info('SSE connections closed');
 
         // Close MQTT connections
         await mqttHistoryCollector.disconnect();

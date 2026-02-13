@@ -1306,6 +1306,760 @@
 			"description": "Historical data query endpoints"
 		},
 		{
+			"name": "6. Realtime Subscription",
+			"item": [
+				{
+					"name": "Subscribe to Realtime Data",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"siteId\": \"{{siteId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/realtime/subscribe",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"realtime",
+								"subscribe"
+							]
+						},
+						"description": "Subscribe to realtime MQTT data for a specific siteId"
+					},
+					"response": []
+				},
+				{
+					"name": "Unsubscribe from Realtime Data",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"siteId\": \"{{siteId}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/realtime/unsubscribe",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"realtime",
+								"unsubscribe"
+							]
+						},
+						"description": "Unsubscribe from realtime MQTT data for a specific siteId"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Subscriptions",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/realtime/subscriptions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"realtime",
+								"subscriptions"
+							]
+						},
+						"description": "Get list of siteIds user is subscribed to"
+					},
+					"response": []
+				}
+			],
+			"description": "Realtime MQTT subscription management"
+		},
+		{
+			"name": "7. Notification Rules",
+			"item": [
+				{
+					"name": "Create Notification Rule - Threshold",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.data && response.data.id) {",
+									"        pm.environment.set('ruleId', response.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Battery Voltage High Alert\",\n    \"description\": \"Alert when battery voltage exceeds 55V\",\n    \"deviceId\": \"{{deviceId}}\",\n    \"ruleType\": \"THRESHOLD\",\n    \"field\": \"battVolt\",\n    \"operator\": \">\",\n    \"value\": 55,\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rules",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules"
+							]
+						},
+						"description": "Create a threshold notification rule"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Notification Rule - Change Detection",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Device Status Changed\",\n    \"description\": \"Alert when device status changes\",\n    \"deviceId\": \"{{deviceId}}\",\n    \"ruleType\": \"CHANGE_DETECTION\",\n    \"field\": \"devStatus\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rules",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules"
+							]
+						},
+						"description": "Create a change detection notification rule"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Notification Rule - Device Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Device Offline Alert\",\n    \"description\": \"Alert when device goes offline\",\n    \"deviceId\": \"{{deviceId}}\",\n    \"ruleType\": \"DEVICE_STATUS\",\n    \"field\": \"isOnline\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rules",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules"
+							]
+						},
+						"description": "Create a device status notification rule"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Notification Rule - Custom Expression",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Battery Voltage and Current Alert\",\n    \"description\": \"Alert when voltage is high AND current is low\",\n    \"deviceId\": \"{{deviceId}}\",\n    \"ruleType\": \"CUSTOM_EXPRESSION\",\n    \"field\": \"custom\",\n    \"expression\": \"battVolt > 55 && battCurr < 10\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rules",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules"
+							]
+						},
+						"description": "Create a custom expression notification rule"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification Rule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/rules/{{ruleId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules",
+								"{{ruleId}}"
+							]
+						},
+						"description": "Get notification rule details"
+					},
+					"response": []
+				},
+				{
+					"name": "List Rules by Device",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/rules/device/{{deviceId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules",
+								"device",
+								"{{deviceId}}"
+							]
+						},
+						"description": "Get all notification rules for a specific device"
+					},
+					"response": []
+				},
+				{
+					"name": "List Rules by Project",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/rules/project/{{projectId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules",
+								"project",
+								"{{projectId}}"
+							]
+						},
+						"description": "Get all notification rules for a specific project"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification Rule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Battery Voltage High Alert - Updated\",\n    \"value\": 60,\n    \"isActive\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/rules/{{ruleId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules",
+								"{{ruleId}}"
+							]
+						},
+						"description": "Update notification rule"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Notification Rule",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/rules/{{ruleId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"rules",
+								"{{ruleId}}"
+							]
+						},
+						"description": "Delete notification rule"
+					},
+					"response": []
+				}
+			],
+			"description": "Notification rules management - Create and manage alert rules for devices"
+		},
+		{
+			"name": "8. Notifications",
+			"item": [
+				{
+					"name": "Get My Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications?status=ALL&page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "ALL",
+									"description": "ALL, READ, UNREAD"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "Get user notifications with pagination and filtering"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/unread-count",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"unread-count"
+							]
+						},
+						"description": "Get count of unread notifications"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"{{notificationId}}"
+							]
+						},
+						"description": "Get single notification details"
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}/read",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"{{notificationId}}",
+								"read"
+							]
+						},
+						"description": "Mark a notification as read"
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All as Read",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/read-all",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"read-all"
+							]
+						},
+						"description": "Mark all notifications as read"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Notification",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/{{notificationId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"{{notificationId}}"
+							]
+						},
+						"description": "Delete a notification"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete All Read Notifications",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/read",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"read"
+							]
+						},
+						"description": "Delete all read notifications"
+					},
+					"response": []
+				}
+			],
+			"description": "User notifications - View and manage notifications generated by rules"
+		},
+		{
+			"name": "9. SSE (Server-Sent Events)",
+			"item": [
+				{
+					"name": "Connect to SSE Stream",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sse/connect",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sse",
+								"connect"
+							]
+						},
+						"description": "Establish SSE connection for real-time updates. Note: This will keep the connection open. Events you'll receive:\n- connected: Initial connection event\n- heartbeat: Every 30 seconds\n- realtime-data: Real-time device data\n- notification: New notifications\n- server-shutdown: Server shutdown notice"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My SSE Connections",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sse/my-connections",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sse",
+								"my-connections"
+							]
+						},
+						"description": "Get count of active SSE connections for current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get SSE Statistics (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{accessToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/sse/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"sse",
+								"stats"
+							]
+						},
+						"description": "Get SSE connection statistics (Admin only)"
+					},
+					"response": []
+				}
+			],
+			"description": "SSE (Server-Sent Events) - Real-time streaming of data and notifications"
+		},
+		{
 			"name": "Health Check",
 			"request": {
 				"method": "GET",
@@ -1357,45 +2111,55 @@
 		}
 	],
 	"variable": [
-		{
-			"key": "baseUrl",
-			"value": "http://localhost:3000/api/v1",
-			"type": "string"
-		},
-		{
-			"key": "accessToken",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "refreshToken",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "userId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "projectId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "deviceId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "siteId",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "username",
-			"value": "",
-			"type": "string"
-		}
-	]
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "projectId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "deviceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "siteId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ruleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    }
+  ]
 }
