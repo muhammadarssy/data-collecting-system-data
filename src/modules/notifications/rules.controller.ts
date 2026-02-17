@@ -6,7 +6,7 @@ class RulesController {
   /**
    * Create a new notification rule
    */
-  async createRule(req: Request, res: Response, next: NextFunction) {
+  createRule = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const rule = await rulesService.createRule(userId, req.body);
@@ -15,12 +15,12 @@ class RulesController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get a single notification rule
    */
-  async getRule(req: Request, res: Response, next: NextFunction) {
+  getRule = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { ruleId } = req.params;
@@ -31,12 +31,12 @@ class RulesController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get all rules for a device
    */
-  async getRulesByDevice(req: Request, res: Response, next: NextFunction) {
+  getRulesByDevice = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { deviceId } = req.params;
@@ -51,12 +51,12 @@ class RulesController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get all rules for a project
    */
-  async getRulesByProject(req: Request, res: Response, next: NextFunction) {
+  getRulesByProject = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { projectId } = req.params;
@@ -71,12 +71,12 @@ class RulesController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Update a notification rule
    */
-  async updateRule(req: Request, res: Response, next: NextFunction) {
+  updateRule = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { ruleId } = req.params;
@@ -87,12 +87,12 @@ class RulesController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Delete a notification rule
    */
-  async deleteRule(req: Request, res: Response, next: NextFunction) {
+  deleteRule = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { ruleId } = req.params;
@@ -103,7 +103,7 @@ class RulesController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }
 
 export default new RulesController();

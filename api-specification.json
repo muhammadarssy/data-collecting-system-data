@@ -1,0 +1,1458 @@
+{
+  "apiVersion": "v1",
+  "baseUrl": "http://localhost:3000/api/v1",
+  "info": {
+    "title": "Data Collecting System API",
+    "description": "API specification untuk Data Collecting System dengan contoh response untuk integrasi frontend",
+    "version": "1.0.0"
+  },
+  "authentication": {
+    "type": "Bearer Token",
+    "description": "Gunakan Bearer token di header Authorization untuk endpoint yang memerlukan autentikasi",
+    "header": "Authorization: Bearer <token>"
+  },
+  "endpoints": {
+    "auth": {
+      "register": {
+        "method": "POST",
+        "path": "/auth/register",
+        "description": "Register user baru",
+        "authentication": false,
+        "requestBody": {
+          "username": "string (required)",
+          "email": "string (required, valid email)",
+          "password": "string (required, min 8 characters)"
+        },
+        "exampleRequest": {
+          "username": "johndoe",
+          "email": "john@example.com",
+          "password": "SecurePass123!"
+        },
+        "responses": {
+          "success": {
+            "status": 201,
+            "body": {
+              "success": true,
+              "message": "User registered successfully",
+              "data": {
+                "user": {
+                  "id": "cm123abc456def",
+                  "username": "johndoe",
+                  "email": "john@example.com",
+                  "role": "USER",
+                  "createdAt": "2026-02-16T10:30:00.000Z"
+                },
+                "tokens": {
+                  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              }
+            }
+          },
+          "error": {
+            "status": 400,
+            "body": {
+              "success": false,
+              "error": "Email already exists"
+            }
+          }
+        }
+      },
+      "login": {
+        "method": "POST",
+        "path": "/auth/login",
+        "description": "Login user",
+        "authentication": false,
+        "requestBody": {
+          "email": "string (required)",
+          "password": "string (required)"
+        },
+        "exampleRequest": {
+          "email": "john@example.com",
+          "password": "SecurePass123!"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Login successful",
+              "data": {
+                "user": {
+                  "id": "cm123abc456def",
+                  "username": "johndoe",
+                  "email": "john@example.com",
+                  "role": "USER"
+                },
+                "tokens": {
+                  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                }
+              }
+            }
+          },
+          "error": {
+            "status": 401,
+            "body": {
+              "success": false,
+              "error": "Invalid credentials"
+            }
+          }
+        }
+      },
+      "refresh": {
+        "method": "POST",
+        "path": "/auth/refresh",
+        "description": "Refresh access token",
+        "authentication": false,
+        "requestBody": {
+          "refreshToken": "string (required)"
+        },
+        "exampleRequest": {
+          "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Token refreshed successfully",
+              "data": {
+                "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+              }
+            }
+          },
+          "error": {
+            "status": 401,
+            "body": {
+              "success": false,
+              "error": "Invalid refresh token"
+            }
+          }
+        }
+      },
+      "getProfile": {
+        "method": "GET",
+        "path": "/auth/profile",
+        "description": "Get current user profile",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Profile retrieved successfully",
+              "data": {
+                "id": "cm123abc456def",
+                "username": "johndoe",
+                "email": "john@example.com",
+                "role": "USER",
+                "createdAt": "2026-02-16T10:30:00.000Z"
+              }
+            }
+          }
+        }
+      }
+    },
+    "users": {
+      "getProfile": {
+        "method": "GET",
+        "path": "/users/profile",
+        "description": "Get current user profile (detailed)",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Profile retrieved successfully",
+              "data": {
+                "id": "cm123abc456def",
+                "username": "johndoe",
+                "email": "john@example.com",
+                "role": "USER",
+                "createdAt": "2026-02-16T10:30:00.000Z",
+                "updatedAt": "2026-02-16T10:30:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "updateProfile": {
+        "method": "PUT",
+        "path": "/users/profile",
+        "description": "Update current user profile",
+        "authentication": true,
+        "requestBody": {
+          "username": "string (optional)",
+          "email": "string (optional)"
+        },
+        "exampleRequest": {
+          "username": "johndoe_updated"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Profile updated successfully",
+              "data": {
+                "id": "cm123abc456def",
+                "username": "johndoe_updated",
+                "email": "john@example.com",
+                "role": "USER",
+                "updatedAt": "2026-02-16T11:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "listUsers": {
+        "method": "GET",
+        "path": "/users",
+        "description": "List users (for invitation)",
+        "authentication": true,
+        "queryParams": {
+          "search": "string (optional) - Search by username or email"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Users retrieved successfully",
+              "data": [
+                {
+                  "id": "cm123abc456def",
+                  "username": "johndoe",
+                  "email": "john@example.com",
+                  "role": "USER"
+                },
+                {
+                  "id": "cm456def789ghi",
+                  "username": "janedoe",
+                  "email": "jane@example.com",
+                  "role": "USER"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "inviteUser": {
+        "method": "POST",
+        "path": "/users/invite",
+        "description": "Invite user to project",
+        "authentication": true,
+        "requestBody": {
+          "projectId": "string (required)",
+          "userId": "string (required)",
+          "role": "string (optional, default: VIEWER)"
+        },
+        "exampleRequest": {
+          "projectId": "cm789ghi012jkl",
+          "userId": "cm456def789ghi",
+          "role": "VIEWER"
+        },
+        "responses": {
+          "success": {
+            "status": 201,
+            "body": {
+              "success": true,
+              "message": "User invited successfully",
+              "data": {
+                "projectId": "cm789ghi012jkl",
+                "userId": "cm456def789ghi",
+                "role": "VIEWER",
+                "createdAt": "2026-02-16T11:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "removeUser": {
+        "method": "DELETE",
+        "path": "/users/:projectId/:userId",
+        "description": "Remove user from project",
+        "authentication": true,
+        "pathParams": {
+          "projectId": "string (required)",
+          "userId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "User removed successfully",
+              "data": null
+            }
+          }
+        }
+      }
+    },
+    "projects": {
+      "create": {
+        "method": "POST",
+        "path": "/projects",
+        "description": "Create new project",
+        "authentication": true,
+        "requestBody": {
+          "name": "string (required)",
+          "description": "string (optional)",
+          "location": "string (optional)"
+        },
+        "exampleRequest": {
+          "name": "Solar Panel Project A",
+          "description": "Main solar panel monitoring system",
+          "location": "Jakarta"
+        },
+        "responses": {
+          "success": {
+            "status": 201,
+            "body": {
+              "success": true,
+              "message": "Project created successfully",
+              "data": {
+                "id": "cm789ghi012jkl",
+                "name": "Solar Panel Project A",
+                "description": "Main solar panel monitoring system",
+                "location": "Jakarta",
+                "ownerId": "cm123abc456def",
+                "createdAt": "2026-02-16T11:00:00.000Z",
+                "updatedAt": "2026-02-16T11:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "list": {
+        "method": "GET",
+        "path": "/projects",
+        "description": "List user's projects",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Projects retrieved successfully",
+              "data": [
+                {
+                  "id": "cm789ghi012jkl",
+                  "name": "Solar Panel Project A",
+                  "description": "Main solar panel monitoring system",
+                  "location": "Jakarta",
+                  "ownerId": "cm123abc456def",
+                  "createdAt": "2026-02-16T11:00:00.000Z",
+                  "_count": {
+                    "devices": 5,
+                    "projectUsers": 3
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/projects/:id",
+        "description": "Get project by ID",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Project retrieved successfully",
+              "data": {
+                "id": "cm789ghi012jkl",
+                "name": "Solar Panel Project A",
+                "description": "Main solar panel monitoring system",
+                "location": "Jakarta",
+                "ownerId": "cm123abc456def",
+                "createdAt": "2026-02-16T11:00:00.000Z",
+                "updatedAt": "2026-02-16T11:00:00.000Z",
+                "owner": {
+                  "id": "cm123abc456def",
+                  "username": "johndoe",
+                  "email": "john@example.com"
+                },
+                "devices": [
+                  {
+                    "id": "cm012jkl345mno",
+                    "name": "Gateway 1",
+                    "deviceType": "GATEWAY"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "update": {
+        "method": "PUT",
+        "path": "/projects/:id",
+        "description": "Update project",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "requestBody": {
+          "name": "string (optional)",
+          "description": "string (optional)",
+          "location": "string (optional)"
+        },
+        "exampleRequest": {
+          "description": "Updated description for solar panel project"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Project updated successfully",
+              "data": {
+                "id": "cm789ghi012jkl",
+                "name": "Solar Panel Project A",
+                "description": "Updated description for solar panel project",
+                "location": "Jakarta",
+                "updatedAt": "2026-02-16T12:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/projects/:id",
+        "description": "Delete project",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Project deleted successfully",
+              "data": null
+            }
+          }
+        }
+      },
+      "getUsers": {
+        "method": "GET",
+        "path": "/projects/:id/users",
+        "description": "Get project users",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Project users retrieved successfully",
+              "data": [
+                {
+                  "userId": "cm123abc456def",
+                  "role": "OWNER",
+                  "user": {
+                    "id": "cm123abc456def",
+                    "username": "johndoe",
+                    "email": "john@example.com"
+                  }
+                },
+                {
+                  "userId": "cm456def789ghi",
+                  "role": "VIEWER",
+                  "user": {
+                    "id": "cm456def789ghi",
+                    "username": "janedoe",
+                    "email": "jane@example.com"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "devices": {
+      "create": {
+        "method": "POST",
+        "path": "/devices",
+        "description": "Create new device",
+        "authentication": true,
+        "requestBody": {
+          "name": "string (required)",
+          "deviceType": "string (required) - GATEWAY | CHINT | INVERTER_BATTERY",
+          "projectId": "string (required)",
+          "mqttTopic": "string (optional)",
+          "metadata": "object (optional)"
+        },
+        "exampleRequest": {
+          "name": "Gateway 1",
+          "deviceType": "GATEWAY",
+          "projectId": "cm789ghi012jkl",
+          "mqttTopic": "data/site001/gateway",
+          "metadata": {
+            "location": "Building A"
+          }
+        },
+        "responses": {
+          "success": {
+            "status": 201,
+            "body": {
+              "success": true,
+              "message": "Device created successfully",
+              "data": {
+                "id": "cm012jkl345mno",
+                "name": "Gateway 1",
+                "deviceType": "GATEWAY",
+                "projectId": "cm789ghi012jkl",
+                "mqttTopic": "data/site001/gateway",
+                "metadata": {
+                  "location": "Building A"
+                },
+                "createdAt": "2026-02-16T12:00:00.000Z",
+                "updatedAt": "2026-02-16T12:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "list": {
+        "method": "GET",
+        "path": "/devices",
+        "description": "List devices by project",
+        "authentication": true,
+        "queryParams": {
+          "projectId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Devices retrieved successfully",
+              "data": [
+                {
+                  "id": "cm012jkl345mno",
+                  "name": "Gateway 1",
+                  "deviceType": "GATEWAY",
+                  "projectId": "cm789ghi012jkl",
+                  "mqttTopic": "data/site001/gateway",
+                  "createdAt": "2026-02-16T12:00:00.000Z"
+                },
+                {
+                  "id": "cm345mno678pqr",
+                  "name": "Inverter 1",
+                  "deviceType": "INVERTER_BATTERY",
+                  "projectId": "cm789ghi012jkl",
+                  "mqttTopic": "data/site001/inverter",
+                  "createdAt": "2026-02-16T12:10:00.000Z"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/devices/:id",
+        "description": "Get device by ID",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Device retrieved successfully",
+              "data": {
+                "id": "cm012jkl345mno",
+                "name": "Gateway 1",
+                "deviceType": "GATEWAY",
+                "projectId": "cm789ghi012jkl",
+                "mqttTopic": "data/site001/gateway",
+                "metadata": {
+                  "location": "Building A"
+                },
+                "createdAt": "2026-02-16T12:00:00.000Z",
+                "updatedAt": "2026-02-16T12:00:00.000Z",
+                "project": {
+                  "id": "cm789ghi012jkl",
+                  "name": "Solar Panel Project A"
+                }
+              }
+            }
+          }
+        }
+      },
+      "update": {
+        "method": "PUT",
+        "path": "/devices/:id",
+        "description": "Update device",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "requestBody": {
+          "name": "string (optional)",
+          "mqttTopic": "string (optional)",
+          "metadata": "object (optional)"
+        },
+        "exampleRequest": {
+          "name": "Gateway 1 - Updated",
+          "metadata": {
+            "location": "Building A - Floor 2"
+          }
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Device updated successfully",
+              "data": {
+                "id": "cm012jkl345mno",
+                "name": "Gateway 1 - Updated",
+                "deviceType": "GATEWAY",
+                "metadata": {
+                  "location": "Building A - Floor 2"
+                },
+                "updatedAt": "2026-02-16T13:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/devices/:id",
+        "description": "Delete device",
+        "authentication": true,
+        "pathParams": {
+          "id": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Device deleted successfully",
+              "data": null
+            }
+          }
+        }
+      }
+    },
+    "data": {
+      "gatewayHistory": {
+        "method": "GET",
+        "path": "/data/gateway",
+        "description": "Query gateway history data",
+        "authentication": true,
+        "queryParams": {
+          "projectId": "string (required)",
+          "deviceId": "string (optional)",
+          "startDate": "string (optional) - ISO 8601 format",
+          "endDate": "string (optional) - ISO 8601 format",
+          "page": "number (optional, default: 1)",
+          "limit": "number (optional, default: 100)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Gateway history data retrieved successfully",
+              "data": {
+                "data": [
+                  {
+                    "id": "cm678pqr901stu",
+                    "deviceId": "cm012jkl345mno",
+                    "timestamp": "2026-02-16T13:00:00.000Z",
+                    "siteId": "site001",
+                    "voltage": 220.5,
+                    "current": 10.2,
+                    "power": 2250,
+                    "frequency": 50.1,
+                    "createdAt": "2026-02-16T13:00:10.000Z"
+                  }
+                ],
+                "pagination": {
+                  "page": 1,
+                  "limit": 100,
+                  "total": 150,
+                  "totalPages": 2
+                }
+              }
+            }
+          }
+        }
+      },
+      "chintHistory": {
+        "method": "GET",
+        "path": "/data/chint",
+        "description": "Query chint history data",
+        "authentication": true,
+        "queryParams": {
+          "projectId": "string (required)",
+          "deviceId": "string (optional)",
+          "startDate": "string (optional)",
+          "endDate": "string (optional)",
+          "page": "number (optional)",
+          "limit": "number (optional)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Chint history data retrieved successfully",
+              "data": {
+                "data": [
+                  {
+                    "id": "cm901stu234vwx",
+                    "deviceId": "cm234stu567vwx",
+                    "timestamp": "2026-02-16T13:00:00.000Z",
+                    "siteId": "site001",
+                    "energyTotal": 15000.5,
+                    "powerTotal": 3500.2,
+                    "voltageL1": 220.1,
+                    "voltageL2": 221.3,
+                    "voltageL3": 219.8,
+                    "createdAt": "2026-02-16T13:00:10.000Z"
+                  }
+                ],
+                "pagination": {
+                  "page": 1,
+                  "limit": 100,
+                  "total": 200,
+                  "totalPages": 2
+                }
+              }
+            }
+          }
+        }
+      },
+      "inverterBatteryHistory": {
+        "method": "GET",
+        "path": "/data/inverter/battery",
+        "description": "Query inverter battery history data",
+        "authentication": true,
+        "queryParams": {
+          "projectId": "string (required)",
+          "deviceId": "string (optional)",
+          "startDate": "string (optional)",
+          "endDate": "string (optional)",
+          "page": "number (optional)",
+          "limit": "number (optional)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Inverter battery history data retrieved successfully",
+              "data": {
+                "data": [
+                  {
+                    "id": "cm234vwx567yza",
+                    "deviceId": "cm345mno678pqr",
+                    "timestamp": "2026-02-16T13:00:00.000Z",
+                    "siteId": "site001",
+                    "batteryVoltage": 48.5,
+                    "batteryCurrent": 25.3,
+                    "batterySOC": 85.5,
+                    "batteryTemp": 28.5,
+                    "inverterPower": 1200.5,
+                    "createdAt": "2026-02-16T13:00:10.000Z"
+                  }
+                ],
+                "pagination": {
+                  "page": 1,
+                  "limit": 100,
+                  "total": 180,
+                  "totalPages": 2
+                }
+              }
+            }
+          }
+        }
+      },
+      "latestDeviceData": {
+        "method": "GET",
+        "path": "/data/device/:deviceId/latest",
+        "description": "Get latest data for a device",
+        "authentication": true,
+        "pathParams": {
+          "deviceId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Latest device data retrieved successfully",
+              "data": {
+                "deviceId": "cm012jkl345mno",
+                "deviceType": "GATEWAY",
+                "timestamp": "2026-02-16T13:30:00.000Z",
+                "data": {
+                  "voltage": 220.5,
+                  "current": 10.2,
+                  "power": 2250,
+                  "frequency": 50.1
+                }
+              }
+            }
+          },
+          "noData": {
+            "status": 404,
+            "body": {
+              "success": false,
+              "error": "No data found for this device"
+            }
+          }
+        }
+      }
+    },
+    "realtime": {
+      "subscribe": {
+        "method": "POST",
+        "path": "/realtime/subscribe",
+        "description": "Subscribe to realtime data for a site",
+        "authentication": true,
+        "requestBody": {
+          "siteId": "string (required)"
+        },
+        "exampleRequest": {
+          "siteId": "site001"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Subscribed to realtime data for site: site001",
+              "data": {
+                "userId": "cm123abc456def",
+                "siteId": "site001",
+                "subscribedAt": "2026-02-16T13:30:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "unsubscribe": {
+        "method": "POST",
+        "path": "/realtime/unsubscribe",
+        "description": "Unsubscribe from realtime data for a site",
+        "authentication": true,
+        "requestBody": {
+          "siteId": "string (required)"
+        },
+        "exampleRequest": {
+          "siteId": "site001"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Unsubscribed from realtime data for site: site001",
+              "data": null
+            }
+          }
+        }
+      },
+      "getSubscriptions": {
+        "method": "GET",
+        "path": "/realtime/subscriptions",
+        "description": "List user's active realtime subscriptions",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Active subscriptions retrieved successfully",
+              "data": {
+                "subscriptions": [
+                  "site001",
+                  "site002"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "unsubscribeAll": {
+        "method": "POST",
+        "path": "/realtime/unsubscribe-all",
+        "description": "Unsubscribe from all realtime sites",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Unsubscribed from all sites",
+              "data": null
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "create": {
+        "method": "POST",
+        "path": "/rules",
+        "description": "Create a new notification rule",
+        "authentication": true,
+        "requestBody": {
+          "name": "string (required)",
+          "deviceId": "string (required)",
+          "condition": "object (required)",
+          "isActive": "boolean (optional, default: true)"
+        },
+        "exampleRequest": {
+          "name": "High Temperature Alert",
+          "deviceId": "cm345mno678pqr",
+          "condition": {
+            "field": "batteryTemp",
+            "operator": ">",
+            "value": 50
+          },
+          "isActive": true
+        },
+        "responses": {
+          "success": {
+            "status": 201,
+            "body": {
+              "success": true,
+              "message": "Notification rule created successfully",
+              "data": {
+                "id": "cm567yza890bcd",
+                "name": "High Temperature Alert",
+                "deviceId": "cm345mno678pqr",
+                "condition": {
+                  "field": "batteryTemp",
+                  "operator": ">",
+                  "value": 50
+                },
+                "isActive": true,
+                "createdBy": "cm123abc456def",
+                "createdAt": "2026-02-16T14:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/rules/:ruleId",
+        "description": "Get a single notification rule",
+        "authentication": true,
+        "pathParams": {
+          "ruleId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Notification rule retrieved successfully",
+              "data": {
+                "id": "cm567yza890bcd",
+                "name": "High Temperature Alert",
+                "deviceId": "cm345mno678pqr",
+                "condition": {
+                  "field": "batteryTemp",
+                  "operator": ">",
+                  "value": 50
+                },
+                "isActive": true,
+                "device": {
+                  "id": "cm345mno678pqr",
+                  "name": "Inverter 1",
+                  "deviceType": "INVERTER_BATTERY"
+                }
+              }
+            }
+          }
+        }
+      },
+      "getByDevice": {
+        "method": "GET",
+        "path": "/rules/device/:deviceId",
+        "description": "Get all rules for a device",
+        "authentication": true,
+        "pathParams": {
+          "deviceId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Found 2 notification rule(s) for device",
+              "data": [
+                {
+                  "id": "cm567yza890bcd",
+                  "name": "High Temperature Alert",
+                  "condition": {
+                    "field": "batteryTemp",
+                    "operator": ">",
+                    "value": 50
+                  },
+                  "isActive": true
+                },
+                {
+                  "id": "cm890bcd123efg",
+                  "name": "Low Battery Alert",
+                  "condition": {
+                    "field": "batterySOC",
+                    "operator": "<",
+                    "value": 20
+                  },
+                  "isActive": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      "getByProject": {
+        "method": "GET",
+        "path": "/rules/project/:projectId",
+        "description": "Get all rules for a project",
+        "authentication": true,
+        "pathParams": {
+          "projectId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Found 3 notification rule(s) for project",
+              "data": [
+                {
+                  "id": "cm567yza890bcd",
+                  "name": "High Temperature Alert",
+                  "deviceId": "cm345mno678pqr",
+                  "device": {
+                    "name": "Inverter 1",
+                    "deviceType": "INVERTER_BATTERY"
+                  },
+                  "isActive": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      "update": {
+        "method": "PATCH",
+        "path": "/rules/:ruleId",
+        "description": "Update a notification rule",
+        "authentication": true,
+        "pathParams": {
+          "ruleId": "string (required)"
+        },
+        "requestBody": {
+          "name": "string (optional)",
+          "condition": "object (optional)",
+          "isActive": "boolean (optional)"
+        },
+        "exampleRequest": {
+          "isActive": false
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Notification rule updated successfully",
+              "data": {
+                "id": "cm567yza890bcd",
+                "name": "High Temperature Alert",
+                "isActive": false,
+                "updatedAt": "2026-02-16T14:30:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/rules/:ruleId",
+        "description": "Delete a notification rule",
+        "authentication": true,
+        "pathParams": {
+          "ruleId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Notification rule deleted successfully",
+              "data": null
+            }
+          }
+        }
+      }
+    },
+    "notifications": {
+      "list": {
+        "method": "GET",
+        "path": "/notifications",
+        "description": "Get user notifications with pagination and filtering",
+        "authentication": true,
+        "queryParams": {
+          "status": "string (optional) - UNREAD | READ",
+          "page": "number (optional, default: 1)",
+          "limit": "number (optional, default: 20)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Found 5 notification(s)",
+              "data": {
+                "data": [
+                  {
+                    "id": "cm123efg456hij",
+                    "title": "High Temperature Alert",
+                    "message": "Battery temperature exceeded 50°C on Inverter 1",
+                    "status": "UNREAD",
+                    "ruleId": "cm567yza890bcd",
+                    "data": {
+                      "deviceId": "cm345mno678pqr",
+                      "deviceName": "Inverter 1",
+                      "batteryTemp": 52.5
+                    },
+                    "createdAt": "2026-02-16T14:30:00.000Z"
+                  }
+                ],
+                "pagination": {
+                  "page": 1,
+                  "limit": 20,
+                  "total": 5,
+                  "totalPages": 1
+                }
+              }
+            }
+          }
+        }
+      },
+      "getById": {
+        "method": "GET",
+        "path": "/notifications/:notificationId",
+        "description": "Get a single notification",
+        "authentication": true,
+        "pathParams": {
+          "notificationId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Notification retrieved successfully",
+              "data": {
+                "id": "cm123efg456hij",
+                "title": "High Temperature Alert",
+                "message": "Battery temperature exceeded 50°C on Inverter 1",
+                "status": "UNREAD",
+                "ruleId": "cm567yza890bcd",
+                "data": {
+                  "deviceId": "cm345mno678pqr",
+                  "deviceName": "Inverter 1",
+                  "batteryTemp": 52.5
+                },
+                "createdAt": "2026-02-16T14:30:00.000Z",
+                "rule": {
+                  "id": "cm567yza890bcd",
+                  "name": "High Temperature Alert"
+                }
+              }
+            }
+          }
+        }
+      },
+      "getUnreadCount": {
+        "method": "GET",
+        "path": "/notifications/unread-count",
+        "description": "Get unread notification count",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Unread count retrieved successfully",
+              "data": {
+                "count": 3
+              }
+            }
+          }
+        }
+      },
+      "markAsRead": {
+        "method": "PATCH",
+        "path": "/notifications/:notificationId/read",
+        "description": "Mark notification as read",
+        "authentication": true,
+        "pathParams": {
+          "notificationId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Notification marked as read",
+              "data": {
+                "id": "cm123efg456hij",
+                "status": "READ",
+                "updatedAt": "2026-02-16T15:00:00.000Z"
+              }
+            }
+          }
+        }
+      },
+      "markAllAsRead": {
+        "method": "PATCH",
+        "path": "/notifications/read-all",
+        "description": "Mark all notifications as read",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "3 notification(s) marked as read",
+              "data": {
+                "count": 3
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/notifications/:notificationId",
+        "description": "Delete a notification",
+        "authentication": true,
+        "pathParams": {
+          "notificationId": "string (required)"
+        },
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "Notification deleted successfully",
+              "data": null
+            }
+          }
+        }
+      },
+      "deleteAllRead": {
+        "method": "DELETE",
+        "path": "/notifications/read",
+        "description": "Delete all read notifications",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "5 notification(s) deleted successfully",
+              "data": {
+                "count": 5
+              }
+            }
+          }
+        }
+      }
+    },
+    "sse": {
+      "connect": {
+        "method": "GET",
+        "path": "/sse/connect",
+        "description": "Establish SSE connection for real-time updates (Server-Sent Events)",
+        "authentication": true,
+        "note": "This endpoint returns a streaming response. Use EventSource API on the frontend.",
+        "responses": {
+          "success": {
+            "status": 200,
+            "contentType": "text/event-stream",
+            "description": "Stream of events",
+            "events": {
+              "connected": {
+                "description": "Sent immediately after connection",
+                "data": {
+                  "message": "SSE connection established",
+                  "timestamp": "2026-02-16T15:00:00.000Z"
+                }
+              },
+              "heartbeat": {
+                "description": "Sent every 30 seconds to keep connection alive",
+                "data": {
+                  "timestamp": "2026-02-16T15:00:30.000Z"
+                }
+              },
+              "realtime-data": {
+                "description": "Sent when new device data is received",
+                "data": {
+                  "projectId": "cm789ghi012jkl",
+                  "deviceId": "cm012jkl345mno",
+                  "deviceType": "GATEWAY",
+                  "payload": {
+                    "voltage": 220.5,
+                    "current": 10.2
+                  },
+                  "timestamp": "2026-02-16T15:01:00.000Z"
+                }
+              },
+              "notification": {
+                "description": "Sent when a notification is triggered",
+                "data": {
+                  "id": "cm123efg456hij",
+                  "title": "High Temperature Alert",
+                  "message": "Battery temperature exceeded 50°C",
+                  "ruleId": "cm567yza890bcd",
+                  "data": {
+                    "deviceId": "cm345mno678pqr",
+                    "batteryTemp": 52.5
+                  },
+                  "createdAt": "2026-02-16T15:01:30.000Z"
+                }
+              }
+            }
+          },
+          "error": {
+            "status": 403,
+            "body": {
+              "success": false,
+              "error": "No projects accessible for SSE connection"
+            }
+          }
+        },
+        "frontendExample": "const eventSource = new EventSource('http://localhost:3000/api/v1/sse/connect', { headers: { Authorization: 'Bearer <token>' } });"
+      },
+      "getMyConnections": {
+        "method": "GET",
+        "path": "/sse/my-connections",
+        "description": "Get user's active SSE connection count",
+        "authentication": true,
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "You have 2 active SSE connection(s)",
+              "data": {
+                "count": 2,
+                "userId": "cm123abc456def"
+              }
+            }
+          }
+        }
+      },
+      "getStats": {
+        "method": "GET",
+        "path": "/sse/stats",
+        "description": "Get SSE statistics (admin only)",
+        "authentication": true,
+        "requiresRole": "ADMIN",
+        "responses": {
+          "success": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "message": "SSE statistics retrieved successfully",
+              "data": {
+                "totalConnections": 15,
+                "totalUsers": 8,
+                "connections": [
+                  {
+                    "connectionId": "uuid-1234-5678",
+                    "userId": "cm123abc456def",
+                    "projectIds": ["cm789ghi012jkl"],
+                    "connectedAt": "2026-02-16T15:00:00.000Z",
+                    "duration": 300000
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "commonErrors": {
+    "401_unauthorized": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": "No token provided"
+      }
+    },
+    "401_token_expired": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": "Token expired"
+      }
+    },
+    "403_forbidden": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": "Forbidden: Insufficient permissions"
+      }
+    },
+    "404_not_found": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": "Resource not found"
+      }
+    },
+    "500_server_error": {
+      "status": 500,
+      "body": {
+        "success": false,
+        "error": "Internal server error"
+      }
+    }
+  },
+  "notes": {
+    "responseFormat": "All responses follow the format: { success: boolean, message?: string, data?: any, error?: string }",
+    "timestamps": "All timestamps are in ISO 8601 format (UTC)",
+    "pagination": "Paginated responses include: { data: [], pagination: { page, limit, total, totalPages } }",
+    "deviceTypes": "GATEWAY | CHINT | INVERTER_BATTERY",
+    "userRoles": "USER | ADMIN",
+    "projectUserRoles": "OWNER | VIEWER",
+    "notificationStatus": "UNREAD | READ"
+  }
+}

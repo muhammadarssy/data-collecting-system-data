@@ -91,3 +91,8 @@ export async function optionalAuth(req: Request, res: Response, next: NextFuncti
     next();
   }
 }
+
+/**
+ * Require admin role
+ */
+export const requireAdmin = authorize(UserRole.ADMIN);

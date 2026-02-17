@@ -6,7 +6,7 @@ class NotificationsController {
   /**
    * Get user notifications
    */
-  async getNotifications(req: Request, res: Response, next: NextFunction) {
+  getNotifications = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { status, page, limit } = req.query;
@@ -25,12 +25,12 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get a single notification
    */
-  async getNotification(req: Request, res: Response, next: NextFunction) {
+  getNotification = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { notificationId } = req.params;
@@ -44,12 +44,12 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Mark notification as read
    */
-  async markAsRead(req: Request, res: Response, next: NextFunction) {
+  markAsRead = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { notificationId } = req.params;
@@ -60,12 +60,12 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Mark all notifications as read
    */
-  async markAllAsRead(req: Request, res: Response, next: NextFunction) {
+  markAllAsRead = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
 
@@ -79,12 +79,12 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get unread notification count
    */
-  async getUnreadCount(req: Request, res: Response, next: NextFunction) {
+  getUnreadCount = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
 
@@ -94,12 +94,12 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Delete a notification
    */
-  async deleteNotification(req: Request, res: Response, next: NextFunction) {
+  deleteNotification = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const { notificationId } = req.params;
@@ -113,12 +113,12 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Delete all read notifications
    */
-  async deleteAllRead(req: Request, res: Response, next: NextFunction) {
+  deleteAllRead = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
 
@@ -132,7 +132,7 @@ class NotificationsController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }
 
 export default new NotificationsController();

@@ -10,7 +10,7 @@ class SSEController {
    * Establish SSE connection
    * GET /api/v1/sse/connect
    */
-  async connect(req: Request, res: Response, next: NextFunction) {
+  connect = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
 
@@ -53,13 +53,13 @@ class SSEController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get SSE connection statistics (admin only)
    * GET /api/v1/sse/stats
    */
-  async getStats(req: Request, res: Response, next: NextFunction) {
+  getStats = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const stats = sseManager.getStats();
 
@@ -67,13 +67,13 @@ class SSEController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   /**
    * Get user's active SSE connections count
    * GET /api/v1/sse/my-connections
    */
-  async getMyConnections(req: Request, res: Response, next: NextFunction) {
+  getMyConnections = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = req.user!.id;
       const count = sseManager.getUserConnectionCount(userId);
@@ -86,7 +86,7 @@ class SSEController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 }
 
 export default new SSEController();
